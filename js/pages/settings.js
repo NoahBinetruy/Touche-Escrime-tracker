@@ -48,10 +48,16 @@ Pages.settings = async function(content) {
             ${CATEGORIES.map(c => `<option value="${c}" ${prefs.categorie===c?'selected':''}>${c || 'Toutes'}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group"><label class="form-label">Niveau</label>
-          <select class="form-select" id="pref-niveau">
-            ${NIVEAUX.map(n => `<option value="${n.value}" ${prefs.niveau===n.value?'selected':''}>${n.label}</option>`).join('')}
-          </select>
+        <div class="form-group"><label class="form-label">Niveaux</label>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            ${NIVEAUX.slice(1).map(n => {
+              const isChecked = Array.isArray(prefs.niveau) ? prefs.niveau.includes(n.value) : prefs.niveau === n.value;
+              return `<label style="display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--text-secondary)">
+                <input type="checkbox" class="pref-niveau-cb" value="${n.value}" ${isChecked ? 'checked' : ''}>
+                ${n.label}
+              </label>`;
+            }).join('')}
+          </div>
         </div>
       </div>
       <div class="form-row">
@@ -126,7 +132,7 @@ Pages.settings = async function(content) {
       arme: document.getElementById('pref-arme').value,
       sexe: document.getElementById('pref-sexe').value,
       categorie: document.getElementById('pref-categorie').value,
-      niveau: document.getElementById('pref-niveau').value,
+      niveau: Array.from(document.querySelectorAll('.pref-niveau-cb:checked')).map(cb => cb.value),
       region: document.getElementById('pref-region').value,
       departement: document.getElementById('pref-departement').value
     };

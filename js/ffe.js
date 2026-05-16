@@ -195,23 +195,66 @@ const FFE = (() => {
     return `${year}-${month}-${day}`;
   }
 
-  // Fetch and parse FFE competitions (with proxy fallback)
+  // Fetch and parse FFE competitions (with proxy fallback and multi-level support)
   async function fetchCompetitions(prefs) {
-    const url = buildUrl(prefs || { arme: 'foil', sexe: 'M', categorie: 'SENIOR' });
+    const rawPrefs = prefs || defaultPrefs();
+    let niveaux = Array.isArray(rawPrefs.niveau) ? rawPrefs.niveau : [rawPrefs.niveau];
+    if (niveaux.length === 0) niveaux = [''];
 
-    for (const proxy of CORS_PROXIES) {
-      try {
-        const proxyUrl = proxy + encodeURIComponent(url);
-        const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const html = await response.text();
-        const results = parseCompetitions(html);
-        if (results.length > 0) return results;
-      } catch(e) {
-        console.warn('FFE fetch failed with proxy:', proxy, e.message);
+    const fetchLevel = async (niveauStr) => {
+      // Setup correct filters for the specific level
+      const levelPrefs = { ...rawPrefs, niveau: niveauStr };
+      if (niveauStr === '4') { // Départemental
+        levelPrefs.region = ''; // ignore region
+      } else if (niveauStr === '3') { // Régional
+        levelPrefs.departement = ''; // ignore department
+      } else if (niveauStr === '2' || niveauStr === '1') { // National / Inter
+        // Some users might want national comps in their region. If region is set, we keep it. 
+        // We drop departement because nationals are rarely tagged by dept.
+        levelPrefs.departement = ''; 
+      }
+
+      const url = buildUrl(levelPrefs);
+      for (const proxy of CORS_PROXIES) {
+        try {
+          const proxyUrl = proxy + encodeURIComponent(url);
+          const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          const html = await response.text();
+          const results = parseCompetitions(html);
+          if (results.length > 0) return results;
+          // If 0 results but HTTP 200, don't try other proxies for this level
+          return [];
+        } catch(e) {
+          console.warn('FFE fetch failed with proxy:', proxy, e.message);
+        }
+      }
+      return [];
+    };
+
+    // Fetch all checked levels in parallel
+    const allResults = await Promise.all(niveaux.map(lvl => fetchLevel(lvl)));
+    const merged = allResults.flat();
+    
+    // Deduplicate by URL
+    const uniqueComps = [];
+    const seen = new Set();
+    for (const c of merged) {
+      if (!seen.has(c.url)) {
+        seen.add(c.url);
+        uniqueComps.push(c);
       }
     }
-    return [];
+
+    // Sort by date ascending
+    uniqueComps.sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return a.date.localeCompare(b.date);
+    });
+
+    return uniqueComps;
   }
 
   // Get default preferences
