@@ -13,9 +13,9 @@ Pages.settings = async function(content) {
   const NIVEAUX = [
     { value: '', label: 'Tous niveaux' },
     { value: '1', label: 'International' },
-    { value: '2', label: 'National / Interzone' },
-    { value: '3', label: 'Régional' },
-    { value: '4', label: 'Départemental' },
+    { value: '8', label: 'National / Interzone' },
+    { value: '11', label: 'Régional' },
+    { value: '2', label: 'Départemental' },
     { value: '5', label: 'Compétitions internes' },
     { value: '6', label: 'Compétitions libres' }
   ];

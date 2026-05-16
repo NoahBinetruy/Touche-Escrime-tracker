@@ -66,8 +66,8 @@ const FFE = (() => {
     if (prefs.sexe) params.set(`sexe[${prefs.sexe}]`, 'on');
     // Catégorie
     if (prefs.categorie) params.set('categories', prefs.categorie);
-    // Niveau (FFE expects niveaux[])
-    if (prefs.niveau) params.set('niveaux[]', prefs.niveau);
+    // Niveau
+    if (prefs.niveau) params.set('niveaux', prefs.niveau);
     params.set('date', '');
     params.set('final-date', '');
     params.set('regions', prefs.region || '');
@@ -212,11 +212,11 @@ const FFE = (() => {
     const fetchLevel = async (niveauStr) => {
       // Setup correct filters for the specific level
       const levelPrefs = { ...rawPrefs, niveau: niveauStr };
-      if (niveauStr === '4') { // Départemental
+      if (niveauStr === '2') { // Départemental (was 4)
         levelPrefs.region = ''; // ignore region
-      } else if (niveauStr === '3') { // Régional
+      } else if (niveauStr === '11') { // Régional (was 3)
         levelPrefs.departement = ''; // ignore department
-      } else if (niveauStr === '2' || niveauStr === '1') { // National / Inter
+      } else if (niveauStr === '8' || niveauStr === '1') { // National (was 2) / Inter
         // National and international competitions are nationwide, so we clear both region and dept filters
         levelPrefs.region = '';
         levelPrefs.departement = ''; 
