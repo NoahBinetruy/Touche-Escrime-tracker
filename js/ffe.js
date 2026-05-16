@@ -66,8 +66,8 @@ const FFE = (() => {
     if (prefs.sexe) params.set(`sexe[${prefs.sexe}]`, 'on');
     // Catégorie
     if (prefs.categorie) params.set('categories', prefs.categorie);
-    // Niveau
-    if (prefs.niveau) params.set('niveaux', prefs.niveau);
+    // Niveau (FFE expects niveaux[])
+    if (prefs.niveau) params.set('niveaux[]', prefs.niveau);
     params.set('date', '');
     params.set('final-date', '');
     params.set('regions', prefs.region || '');
@@ -99,12 +99,19 @@ const FFE = (() => {
     return comps.length > 0 ? comps : _parseFromLinks(doc);
   }
 
+  function _resolveUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return 'https://www.ffescrime.fr' + (url.startsWith('/') ? '' : '/') + url;
+  }
+
   // Extract competition data from a structured list item
   function _extractFromItem(item) {
     const links = item.querySelectorAll('a[href*="/competition/"]');
     if (links.length === 0) return null;
 
-    const url = links[0]?.href || '';
+    const rawUrl = links[0].getAttribute('href') || '';
+    const url = _resolveUrl(rawUrl);
     let name = '', city = '', dateStr = '', categories = '', weapons = [];
 
     // Extract text from links
@@ -148,7 +155,8 @@ const FFE = (() => {
     let currentComp = null;
 
     allLinks.forEach(link => {
-      const url = link.getAttribute('href') || '';
+      const rawUrl = link.getAttribute('href') || '';
+      const url = _resolveUrl(rawUrl);
       const text = link.textContent.trim();
       if (!text || text === 'en savoir +') return;
 
