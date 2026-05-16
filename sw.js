@@ -1,8 +1,9 @@
-const CACHE_NAME = 'escrime-tracker-v2';
+const CACHE_NAME = 'escrime-tracker-v3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './css/app.css',
   './js/db.js',
+  './js/ffe.js',
   './js/app.js',
   './js/pages/dashboard.js',
   './js/pages/lessons.js',

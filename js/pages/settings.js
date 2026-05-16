@@ -1,5 +1,5 @@
 /* ============================================
-   Touché! - Settings Page (Export/Import)
+   Touché! - Settings Page (Export/Import + FFE)
    ============================================ */
 
 Pages.settings = async function(content) {
@@ -7,10 +7,57 @@ Pages.settings = async function(content) {
   const [lessons, competitions, bouts, opponents] = await Promise.all([
     DB.getLessons(), DB.getCompetitions(), DB.getBouts(), DB.getOpponents()
   ]);
+  const prefs = await FFE.getPrefs();
+
+  const CATEGORIES = ['', 'M9', 'M11', 'M13', 'M15', 'M17', 'M20', 'SENIOR', 'V1', 'V2', 'V3', 'V4'];
+  const NIVEAUX = [
+    { value: '', label: 'Tous niveaux' },
+    { value: '1', label: 'International' },
+    { value: '2', label: 'National / Interzone' },
+    { value: '3', label: 'Régional' },
+    { value: '4', label: 'Départemental' },
+    { value: '5', label: 'Compétitions internes' },
+    { value: '6', label: 'Compétitions libres' }
+  ];
 
   content.innerHTML = `<div class="page">
     <h2 class="page-title">Paramètres</h2>
-    <p class="page-subtitle">Gestion de tes données</p>
+    <p class="page-subtitle">Préférences et gestion des données</p>
+
+    <div class="chart-container">
+      <div class="chart-title">📅 Filtres Calendrier FFE</div>
+      <p style="font-size:.8rem;color:var(--text-muted);margin:4px 0 14px">Configure les filtres pour afficher les compétitions qui te concernent sur la page Compétitions.</p>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Arme</label>
+          <select class="form-select" id="pref-arme">
+            <option value="foil" ${prefs.arme==='foil'?'selected':''}>Fleuret</option>
+            <option value="epee" ${prefs.arme==='epee'?'selected':''}>Épée</option>
+            <option value="sabre" ${prefs.arme==='sabre'?'selected':''}>Sabre</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Sexe</label>
+          <select class="form-select" id="pref-sexe">
+            <option value="M" ${prefs.sexe==='M'?'selected':''}>Hommes</option>
+            <option value="F" ${prefs.sexe==='F'?'selected':''}>Femmes</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Catégorie</label>
+          <select class="form-select" id="pref-categorie">
+            ${CATEGORIES.map(c => `<option value="${c}" ${prefs.categorie===c?'selected':''}>${c || 'Toutes'}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Niveau</label>
+          <select class="form-select" id="pref-niveau">
+            ${NIVEAUX.map(n => `<option value="${n.value}" ${prefs.niveau===n.value?'selected':''}>${n.label}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="save-ffe-prefs">
+        Enregistrer les filtres
+      </button>
+    </div>
 
     <div class="chart-container">
       <div class="chart-title">📊 Résumé des données</div>
@@ -55,9 +102,21 @@ Pages.settings = async function(content) {
     </div>
 
     <div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:.75rem">
-      Touché! v2.0 — Application hors-ligne<br>Données stockées localement sur ton appareil
+      Touché! v2.1 — Application hors-ligne<br>Données stockées localement sur ton appareil
     </div>
   </div>`;
+
+  // Save FFE prefs
+  document.getElementById('save-ffe-prefs').addEventListener('click', async () => {
+    const newPrefs = {
+      arme: document.getElementById('pref-arme').value,
+      sexe: document.getElementById('pref-sexe').value,
+      categorie: document.getElementById('pref-categorie').value,
+      niveau: document.getElementById('pref-niveau').value
+    };
+    await FFE.savePrefs(newPrefs);
+    App.toast('Filtres FFE enregistrés !');
+  });
 
   // Export
   document.getElementById('export-btn').addEventListener('click', async () => {

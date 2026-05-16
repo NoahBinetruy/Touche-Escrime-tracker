@@ -36,6 +36,9 @@ Pages.dashboard = async function(content) {
     </div>`;
   }
 
+  // FFE countdown placeholder (loaded async)
+  const ffeCountdownId = 'ffe-countdown-' + Date.now();
+
   const circumference = 2 * Math.PI * 42;
   const offset = circumference - (winRate / 100) * circumference;
 
@@ -89,5 +92,32 @@ Pages.dashboard = async function(content) {
       <h3>Bienvenue dans Touché!</h3>
       <p>Commence par ajouter une leçon ou enregistrer une compétition !</p>
     </div>` : ''}
+    ${!nextComp ? `<div id="${ffeCountdownId}"></div>` : ''}
   </div>`;
+
+  // Async: load FFE next competition for countdown if no personal comp
+  if (!nextComp) {
+    (async () => {
+      try {
+        const prefs = await FFE.getPrefs();
+        const ffeComps = await FFE.fetchCompetitions(prefs);
+        const el = document.getElementById(ffeCountdownId);
+        if (!el || ffeComps.length === 0) return;
+        const ffe = ffeComps[0];
+        if (!ffe.date) return;
+        const ffeDate = new Date(ffe.date + 'T12:00:00');
+        const nowD = new Date();
+        const days = Math.max(0, Math.ceil((ffeDate - nowD) / (1000 * 60 * 60 * 24)));
+        el.innerHTML = `<div class="countdown-card" onclick="window.open('${ffe.url}','_blank')">
+          <div class="countdown-label">Prochaine compétition FFE</div>
+          <div class="countdown-name">${App.escapeHtml(ffe.name)}</div>
+          <div class="countdown-timer">
+            <div class="countdown-number">${days}</div>
+            <div class="countdown-unit">jour${days > 1 ? 's' : ''}</div>
+          </div>
+          <div class="countdown-date">${ffe.dateStr || App.formatDate(ffe.date)}${ffe.city ? ' — ' + App.escapeHtml(ffe.city) : ''}</div>
+        </div>`;
+      } catch(e) { /* silently ignore */ }
+    })();
+  }
 };

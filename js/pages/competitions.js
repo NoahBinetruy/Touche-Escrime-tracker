@@ -9,6 +9,16 @@ Pages.competitionsList = async function(content) {
   content.innerHTML = `<div class="page">
     <h2 class="page-title">Compétitions</h2>
     <p class="page-subtitle">${comps.length} compétition${comps.length>1?'s':''}</p>
+
+    <div class="section-header"><span class="section-title">📅 Calendrier FFE</span><button class="btn btn-sm btn-secondary" id="ffe-refresh-btn" style="padding:4px 10px;font-size:.7rem">⟳</button></div>
+    <div id="ffe-calendar-section">
+      <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:.85rem">
+        <div class="ffe-loading-spinner"></div>
+        Chargement du calendrier FFE...
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:24px"><span class="section-title">Mes compétitions</span></div>
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       <input type="text" id="comp-search" placeholder="Rechercher...">
@@ -18,12 +28,59 @@ Pages.competitionsList = async function(content) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </a>
   </div>`;
+
+  // Search
   document.getElementById('comp-search').addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase();
     const filtered = comps.filter(c => c.name.toLowerCase().includes(q) || (c.location||'').toLowerCase().includes(q));
     document.getElementById('comp-list').innerHTML = _renderCompCards(filtered);
   });
+
+  // Load FFE calendar
+  _loadFFECalendar();
+  document.getElementById('ffe-refresh-btn').addEventListener('click', () => _loadFFECalendar());
 };
+
+async function _loadFFECalendar() {
+  const section = document.getElementById('ffe-calendar-section');
+  if (!section) return;
+  section.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:.85rem">
+    <div class="ffe-loading-spinner"></div>Chargement...</div>`;
+
+  try {
+    const prefs = await FFE.getPrefs();
+    const comps = await FFE.fetchCompetitions(prefs);
+
+    if (comps.length === 0) {
+      section.innerHTML = `<div class="ffe-empty">
+        <p>Aucune compétition trouvée pour <strong>${FFE.armeLabel(prefs.arme)}</strong> — <strong>${FFE.sexeLabel(prefs.sexe)}</strong> — <strong>${prefs.categorie || 'Toutes catégories'}</strong></p>
+        <a href="#settings" class="btn btn-sm btn-secondary" style="margin-top:8px">⚙️ Modifier les filtres</a>
+      </div>`;
+      return;
+    }
+
+    const prefsLabel = `${FFE.armeLabel(prefs.arme)} · ${FFE.sexeLabel(prefs.sexe)} · ${prefs.categorie || 'Tous'}`;
+    section.innerHTML = `
+      <div class="ffe-prefs-bar"><span>${prefsLabel}</span><a href="#settings" style="color:var(--accent-primary);font-size:.75rem">Modifier ⚙️</a></div>
+      ${comps.slice(0, 10).map(c => `<div class="ffe-comp-card" onclick="window.open('${c.url}','_blank')">
+        <div class="ffe-comp-date">${c.dateStr || (c.date ? App.formatDate(c.date) : '?')}</div>
+        <div class="ffe-comp-info">
+          <div class="ffe-comp-name">${_escHtml(c.name)}</div>
+          <div class="ffe-comp-city">${_escHtml(c.city)}${c.categories ? ' · <span style="color:var(--accent-primary)">' + _escHtml(c.categories) + '</span>' : ''}</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>`).join('')}
+    `;
+  } catch(e) {
+    section.innerHTML = `<div class="ffe-empty">
+      <p>Impossible de charger le calendrier FFE</p>
+      <p style="font-size:.75rem;color:var(--text-muted)">Vérifie ta connexion internet</p>
+    </div>`;
+  }
+}
+
+function _escHtml(s) { return App.escapeHtml(s || ''); }
+
 
 function _renderCompCards(comps) {
   if (!comps.length) return `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><h3>Aucune compétition</h3><p>Enregistre ta première compétition</p></div>`;
