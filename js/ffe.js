@@ -209,8 +209,8 @@ const FFE = (() => {
       } else if (niveauStr === '3') { // Régional
         levelPrefs.departement = ''; // ignore department
       } else if (niveauStr === '2' || niveauStr === '1') { // National / Inter
-        // Some users might want national comps in their region. If region is set, we keep it. 
-        // We drop departement because nationals are rarely tagged by dept.
+        // National and international competitions are nationwide, so we clear both region and dept filters
+        levelPrefs.region = '';
         levelPrefs.departement = ''; 
       }
 
