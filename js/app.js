@@ -162,6 +162,7 @@ const App = (() => {
           else await Pages.opponentsList(content);
           break;
         case 'stats': await Pages.stats(content); break;
+        case 'settings': await Pages.settings(content); break;
         default: await Pages.dashboard(content);
       }
     } catch (err) {
@@ -190,6 +191,7 @@ const App = (() => {
   return {
     navigate, toast, confirm, openModal, closeModal, setHeader, setActiveNav,
     formatDate, formatDateShort, toInputDate, weaponLabel, weaponClass,
-    levelLabel, boutTypeLabel, truncate, escapeHtml, extractYoutubeId, placementBadge
+    levelLabel, boutTypeLabel, truncate, escapeHtml, extractYoutubeId, placementBadge,
+    parseDate
   };
 })();

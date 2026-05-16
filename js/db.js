@@ -1,11 +1,11 @@
 /* ============================================
-   EscrimeTracker - IndexedDB Database Layer
+   Touché! - IndexedDB Database Layer
    Offline-first storage for all app data
    ============================================ */
 
 const DB = (() => {
   const DB_NAME = 'EscrimeTrackerDB';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   let db = null;
 
   // Generate unique ID
@@ -43,6 +43,14 @@ const DB = (() => {
         // Videos store (for local video blobs)
         if (!database.objectStoreNames.contains('videos')) {
           database.createObjectStore('videos', { keyPath: 'id' });
+        }
+        // Photos store (for lesson photos) - v2
+        if (!database.objectStoreNames.contains('photos')) {
+          database.createObjectStore('photos', { keyPath: 'id' });
+        }
+        // Settings store - v2
+        if (!database.objectStoreNames.contains('settings')) {
+          database.createObjectStore('settings', { keyPath: 'key' });
         }
       };
       request.onsuccess = (e) => { db = e.target.result; resolve(db); };
@@ -102,10 +110,82 @@ const DB = (() => {
     });
   }
 
+  // Convert Blob to base64 for export
+  function blobToBase64(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // Convert base64 back to Blob
+  function base64ToBlob(base64) {
+    const parts = base64.split(',');
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const bytes = atob(parts[1]);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  // Export all data as JSON
+  async function exportAll() {
+    const [lessons, competitions, bouts, opponents, videos, photos] = await Promise.all([
+      getAll('lessons'), getAll('competitions'), getAll('bouts'),
+      getAll('opponents'), getAll('videos'), getAll('photos')
+    ]);
+    // Convert video/photo blobs to base64
+    const videosExport = [];
+    for (const v of videos) {
+      try {
+        const b64 = await blobToBase64(v.blob);
+        videosExport.push({ ...v, blob: b64 });
+      } catch(e) { /* skip corrupted */ }
+    }
+    const photosExport = [];
+    for (const p of photos) {
+      try {
+        const b64 = await blobToBase64(p.blob);
+        photosExport.push({ ...p, blob: b64 });
+      } catch(e) { /* skip corrupted */ }
+    }
+    return {
+      version: 2,
+      exportDate: new Date().toISOString(),
+      app: 'Touché!',
+      data: { lessons, competitions, bouts, opponents, videos: videosExport, photos: photosExport }
+    };
+  }
+
+  // Import all data from JSON
+  async function importAll(json) {
+    const d = json.data;
+    const stores = ['lessons', 'competitions', 'bouts', 'opponents', 'videos', 'photos'];
+    // Clear all stores
+    for (const s of stores) {
+      const all = await getAll(s);
+      for (const item of all) await remove(s, item.id || item.key);
+    }
+    // Import
+    if (d.lessons) for (const item of d.lessons) await put('lessons', item);
+    if (d.competitions) for (const item of d.competitions) await put('competitions', item);
+    if (d.bouts) for (const item of d.bouts) await put('bouts', item);
+    if (d.opponents) for (const item of d.opponents) await put('opponents', item);
+    if (d.videos) for (const v of d.videos) {
+      try { await put('videos', { ...v, blob: base64ToBlob(v.blob) }); } catch(e) {}
+    }
+    if (d.photos) for (const p of d.photos) {
+      try { await put('photos', { ...p, blob: base64ToBlob(p.blob) }); } catch(e) {}
+    }
+  }
+
   // Public API
   return {
     uid,
     open,
+    exportAll,
+    importAll,
     // Lessons
     getLessons: () => getAll('lessons'),
     getLesson: (id) => getById('lessons', id),
@@ -153,5 +233,15 @@ const DB = (() => {
       return put('videos', data);
     },
     deleteVideo: (id) => remove('videos', id),
+    // Photos (blob storage)
+    getPhoto: (id) => getById('photos', id),
+    savePhoto: (data) => {
+      if (!data.id) data.id = uid();
+      return put('photos', data);
+    },
+    deletePhoto: (id) => remove('photos', id),
+    // Settings
+    getSetting: (key) => getById('settings', key),
+    saveSetting: (key, value) => put('settings', { key, value }),
   };
 })();

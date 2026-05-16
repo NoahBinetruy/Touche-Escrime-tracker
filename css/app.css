@@ -477,3 +477,165 @@ ul, ol { list-style: none; }
 /* YouTube input area */
 .youtube-input-area { display: flex; gap: 8px; margin-bottom: 12px; }
 .youtube-input-area input { flex: 1; }
+
+/* === MOOD SELECTOR === */
+.mood-selector {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.mood-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.mood-btn:active { transform: scale(0.9); }
+.mood-btn.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-dim);
+  box-shadow: 0 0 12px rgba(124, 92, 252, 0.3);
+  transform: scale(1.1);
+}
+
+/* === STAR SELECTOR === */
+.star-selector {
+  display: flex; gap: 4px;
+}
+.star-btn {
+  font-size: 1.6rem;
+  color: var(--text-muted);
+  transition: var(--transition);
+  cursor: pointer;
+  padding: 4px 2px;
+  background: none; border: none;
+}
+.star-btn.active {
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+.star-btn:active { transform: scale(1.3); }
+
+/* === EVALUATION BADGES === */
+.eval-badges {
+  display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.eval-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+}
+.eval-badge-label {
+  font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;
+}
+
+/* === KEY POINTS BOX === */
+.key-points-box {
+  background: rgba(124, 92, 252, 0.06);
+  border: 1px solid rgba(124, 92, 252, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent-primary);
+}
+
+/* === PHOTO GRID === */
+.photo-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.photo-thumb {
+  aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
+  cursor: pointer; border: 1px solid var(--border);
+  transition: var(--transition);
+}
+.photo-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.photo-thumb:active { transform: scale(0.95); border-color: var(--accent-primary); }
+
+/* === COUNTDOWN CARD === */
+.countdown-card {
+  background: linear-gradient(135deg, rgba(124, 92, 252, 0.15), rgba(255, 77, 109, 0.1));
+  border: 1px solid rgba(124, 92, 252, 0.25);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  animation: slideUp 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+.countdown-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+.countdown-card:active { transform: scale(0.98); }
+.countdown-label {
+  font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+.countdown-name {
+  font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;
+}
+.countdown-timer {
+  display: flex; align-items: baseline; justify-content: center; gap: 6px;
+  margin-bottom: 8px;
+}
+.countdown-number {
+  font-size: 3rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.countdown-unit {
+  font-size: 1rem; font-weight: 600; color: var(--text-secondary);
+}
+.countdown-date {
+  font-size: 0.8rem; color: var(--text-muted);
+}
+
+/* === FFE LINK CARD === */
+.ffe-link-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  transition: var(--transition);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+.ffe-link-card:active { transform: scale(0.98); background: var(--bg-card-hover); }
+.ffe-link-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent-primary-dim);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--accent-primary);
+}
+.ffe-link-content { flex: 1; min-width: 0; }
+.ffe-link-title { font-size: 0.9rem; font-weight: 600; }
+.ffe-link-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+.ffe-link-card > svg { color: var(--text-muted); flex-shrink: 0; }
+
+/* === SETTINGS PAGE === */
+.settings-link {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  font-size: 0.9rem; color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+.settings-link:last-child { border-bottom: none; }
+.settings-link:active { color: var(--accent-primary); }
+.settings-link svg { flex-shrink: 0; color: var(--text-muted); }
+
+/* === GOLD COLOR VAR === */
+:root { --gold: #ffd700; }

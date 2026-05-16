@@ -1,4 +1,4 @@
-const CACHE_NAME = 'escrime-tracker-v1';
+const CACHE_NAME = 'escrime-tracker-v2';
 const ASSETS_TO_CACHE = [
   './index.html',
   './css/app.css',
@@ -9,6 +9,7 @@ const ASSETS_TO_CACHE = [
   './js/pages/competitions.js',
   './js/pages/opponents.js',
   './js/pages/stats.js',
+  './js/pages/settings.js',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
 ];
