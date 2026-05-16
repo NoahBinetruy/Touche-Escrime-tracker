@@ -54,6 +54,20 @@ Pages.settings = async function(content) {
           </select>
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Région</label>
+          <select class="form-select" id="pref-region">
+            <option value="">-- Toutes --</option>
+            ${FFE.REGIONS.map(r => `<option value="${r.v}" ${prefs.region===r.v?'selected':''}>${r.l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Département</label>
+          <select class="form-select" id="pref-departement">
+            <option value="">-- Tous --</option>
+            ${FFE.DEPARTEMENTS.map(d => `<option value="${d.v}" ${prefs.departement===d.v?'selected':''}>${d.l}</option>`).join('')}
+          </select>
+        </div>
+      </div>
       <button class="btn btn-primary btn-block" id="save-ffe-prefs">
         Enregistrer les filtres
       </button>
@@ -102,7 +116,7 @@ Pages.settings = async function(content) {
     </div>
 
     <div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:.75rem">
-      Touché! v2.1 — Application hors-ligne<br>Données stockées localement sur ton appareil
+      Touché! v2.2 — Application hors-ligne<br>Données stockées localement sur ton appareil
     </div>
   </div>`;
 
@@ -112,7 +126,9 @@ Pages.settings = async function(content) {
       arme: document.getElementById('pref-arme').value,
       sexe: document.getElementById('pref-sexe').value,
       categorie: document.getElementById('pref-categorie').value,
-      niveau: document.getElementById('pref-niveau').value
+      niveau: document.getElementById('pref-niveau').value,
+      region: document.getElementById('pref-region').value,
+      departement: document.getElementById('pref-departement').value
     };
     await FFE.savePrefs(newPrefs);
     App.toast('Filtres FFE enregistrés !');

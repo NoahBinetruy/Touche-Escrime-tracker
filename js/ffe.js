@@ -17,6 +17,45 @@ const FFE = (() => {
     sabre: 'SAB'
   };
 
+  const REGIONS = [
+    {"v":"12","l":"AUVERGNE RHONE ALPES"},{"v":"13","l":"BOURGOGNE FRANCHE COMTE"},{"v":"14","l":"BRETAGNE"},
+    {"v":"15","l":"CENTRE VAL DE LOIRE"},{"v":"16","l":"CORSE"},{"v":"17","l":"FFE"},{"v":"18","l":"GRAND EST"},
+    {"v":"19","l":"GUADELOUPE"},{"v":"20","l":"GUYANE"},{"v":"21","l":"HAUTS DE FRANCE"},{"v":"23","l":"ILE DE FRANCE"},
+    {"v":"25","l":"LA REUNION"},{"v":"26","l":"MARTINIQUE"},{"v":"27","l":"NORMANDIE"},{"v":"28","l":"NOUVELLE AQUITAINE"},
+    {"v":"29","l":"NOUVELLE CALEDONIE"},{"v":"30","l":"OCCITANIE"},{"v":"32","l":"PAYS DE LA LOIRE"},{"v":"31","l":"REGION SUD"}
+  ];
+
+  const DEPARTEMENTS = [
+    {"v":"128","l":"63 Puy-de-Dôme"},{"v":"74","l":"ADE Aube"},{"v":"66","l":"Aisne"},{"v":"67","l":"Allier"},
+    {"v":"68","l":"Alpes de Hautes-Provence"},{"v":"70","l":"Alpes-Maritimes"},{"v":"72","l":"Ardennes"},
+    {"v":"73","l":"Ariège"},{"v":"105","l":"Association Escrime Landes 40"},{"v":"75","l":"Aude"},{"v":"76","l":"Aveyron"},
+    {"v":"77","l":"Bouches-du-Rhône"},{"v":"132","l":"CD 67 Bas-Rhin"},{"v":"78","l":"Calvados"},{"v":"79","l":"Cantal"},
+    {"v":"80","l":"Charente"},{"v":"81","l":"Charente-Maritime"},{"v":"82","l":"Cher"},{"v":"71","l":"Comité Bi-Départemental Ardèche Drôme"},
+    {"v":"89","l":"Comité Bi-Départemental Drôme Ardèche"},{"v":"65","l":"Comité Départemental d'Escrime de l'Ain"},
+    {"v":"87","l":"Comité Départemental d'Escrime de la Dordogne"},{"v":"127","l":"Comité Départemental d'Escrime du Pas-de-Calais"},
+    {"v":"148","l":"Comité Départemental d'Escrime du Var"},{"v":"112","l":"Comité Départemental de Lot-et-Garonne"},
+    {"v":"153","l":"Comité Départemental des Vosges"},{"v":"92","l":"Comité départemental d'escrime Finistère"},
+    {"v":"88","l":"Comité départemental d'escrime du Doubs"},{"v":"124","l":"Comité départemental d'escrime du Nord"},
+    {"v":"83","l":"Corrèze"},{"v":"93","l":"Corse du Sud"},{"v":"86","l":"Creuse"},{"v":"84","l":"Côte-d'Or"},{"v":"85","l":"Côtes d'Armor"},
+    {"v":"144","l":"Deux-Sèvres"},{"v":"156","l":"Essonne"},{"v":"90","l":"Eure"},{"v":"91","l":"Eure-et-Loir"},{"v":"168","l":"FFE"},
+    {"v":"95","l":"Gard"},{"v":"97","l":"Gers"},{"v":"98","l":"Gironde"},{"v":"162","l":"Guadeloupe"},{"v":"164","l":"Guyane"},
+    {"v":"133","l":"Haut-Rhin"},{"v":"94","l":"Haute Corse"},{"v":"96","l":"Haute-Garonne"},{"v":"108","l":"Haute-Loire"},
+    {"v":"117","l":"Haute-Marne"},{"v":"139","l":"Haute-Savoie"},{"v":"135","l":"Haute-Saône"},{"v":"152","l":"Haute-Vienne"},
+    {"v":"69","l":"Hautes-Alpes"},{"v":"130","l":"Hautes-Pyrénées"},{"v":"157","l":"Hauts-de-Seine"},{"v":"99","l":"Hérault - Lozère"},
+    {"v":"100","l":"Ille-et-Vilaine"},{"v":"101","l":"Indre"},{"v":"102","l":"Indre-et-Loire"},{"v":"103","l":"Isère"},
+    {"v":"104","l":"Jura"},{"v":"165","l":"La Réunion"},{"v":"106","l":"Loir-et-Cher"},{"v":"107","l":"Loire"},
+    {"v":"109","l":"Loire-Atlantique"},{"v":"111","l":"Lot"},{"v":"113","l":"Lozère"},{"v":"114","l":"Maine-et-Loire"},
+    {"v":"115","l":"Manche"},{"v":"116","l":"Marne"},{"v":"163","l":"Martinique"},{"v":"118","l":"Mayenne"},
+    {"v":"119","l":"Meurthe-et-Moselle"},{"v":"120","l":"Meuse"},{"v":"161","l":"Monaco"},{"v":"121","l":"Morbihan"},
+    {"v":"122","l":"Moselle"},{"v":"123","l":"Nièvre"},{"v":"167","l":"Nouvelle Calédonie"},{"v":"125","l":"Oise"},
+    {"v":"126","l":"Orne"},{"v":"140","l":"Paris"},{"v":"166","l":"Polynésie Française"},{"v":"129","l":"Pyrénées-Atlantiques"},
+    {"v":"131","l":"Pyrénées-Orientales"},{"v":"134","l":"RHONE METROPOLE 69"},{"v":"137","l":"Sarthe"},{"v":"138","l":"Savoie"},
+    {"v":"136","l":"Saône-et-Loire"},{"v":"141","l":"Seine-Maritime"},{"v":"158","l":"Seine-Saint-Denis"},{"v":"142","l":"Seine-et-Marne"},
+    {"v":"145","l":"Somme"},{"v":"146","l":"Tarn"},{"v":"147","l":"Tarn-et-Garonne"},{"v":"155","l":"Territoire-de-Belfort"},
+    {"v":"159","l":"VAL DE MARNE"},{"v":"160","l":"Val-d'Oise"},{"v":"149","l":"Vaucluse"},{"v":"150","l":"Vendée"},
+    {"v":"151","l":"Vienne"},{"v":"154","l":"Yonne"},{"v":"143","l":"Yvelines"},{"v":"110","l":"loiret"}
+  ].sort((a, b) => a.l.localeCompare(b.l));
+
   // Build the FFE calendar URL with filters
   function buildUrl(prefs) {
     const params = new URLSearchParams();
@@ -31,8 +70,8 @@ const FFE = (() => {
     if (prefs.niveau) params.set('niveaux', prefs.niveau);
     params.set('date', '');
     params.set('final-date', '');
-    params.set('regions', '');
-    params.set('departements', '');
+    params.set('regions', prefs.region || '');
+    params.set('departements', prefs.departement || '');
     return BASE_URL + '?' + params.toString();
   }
 
@@ -177,7 +216,7 @@ const FFE = (() => {
 
   // Get default preferences
   function defaultPrefs() {
-    return { arme: 'foil', sexe: 'M', categorie: 'SENIOR', niveau: '' };
+    return { arme: 'foil', sexe: 'M', categorie: 'SENIOR', niveau: '', region: '', departement: '' };
   }
 
   // Get saved preferences from DB
@@ -208,5 +247,5 @@ const FFE = (() => {
     return { 'E': 'Épée', 'F': 'Fleuret', 'S': 'Sabre', 'L': 'Sabre laser' }[letter] || letter;
   }
 
-  return { fetchCompetitions, getPrefs, savePrefs, defaultPrefs, armeLabel, sexeLabel, weaponLetterToLabel, buildUrl };
+  return { fetchCompetitions, getPrefs, savePrefs, defaultPrefs, armeLabel, sexeLabel, weaponLetterToLabel, buildUrl, REGIONS, DEPARTEMENTS };
 })();
